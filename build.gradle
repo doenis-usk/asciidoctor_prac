@@ -21,6 +21,6 @@ test {
 
 task docs(type: Copy) {
     dependsOn asciidoctor
-    from 'build/docs/asciidoc/sample.html'
+    from 'build/docs/asciidoc/index.html'
     into 'docs/'
 }
