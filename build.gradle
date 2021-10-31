@@ -18,3 +18,9 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+task docs(type: Copy) {
+    dependsOn asciidoctor
+    from 'build/docs/asciidoc/sample.html'
+    into 'docs/'
+}
