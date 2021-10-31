@@ -1,0 +1,165 @@
+= Gitについて復習
+Gitについては知っているつもりでも知らない事が多いのでまとめることにする。
+
+== Gitのブランチ機能
+=== Gitのファイル
+Gitリポジトリには3種類のオブジェクトが含まれている +
+
+* ファイルの中身を表すblobオブジェクト
+* ディレクトリの中身の一覧とどのファイルがどのblobに対応するかを表すツリーオブジェクト
+* ルートツリーおよびすべてのメタデータへのポイントを含むコミットオブジェクト
+
+コミットを行うと、新しいコミットオブジェクトおよびスナップショットが作成される。 +
+新しいコミットは古いコミットへのポインタも含まれる。 +
+
+ブランチとは、コミットを指し示す軽量なポインタに過ぎない +
+また、どのブランチで作業しているかを表すのが HEAD である +
+
+----
+$ git log --oneline --decorate
+----
+
+=== fast-forward
+マージ先のブランチが指し示すコミットがマージ元のコミットの直接の親であるため、 +
+ポインタを前にすすめるだけで良い場合。
+
+=== 三方向
+マージ先のコミットがマージ元のコミットの直系の先祖ではないため、 +
+Git側でちょっと処理が必要な場合。 +
+
+共通の祖先との間で三方向のマージを行う。 +
+
+=== git push
+以下のpushコマンドは、git push oring refs/heads/serverfix:refs/heads/serverfix の略である。 +
+
+----
+$ git push origin serverfix
+----
+
+一般的に refs/heads/は省略可能である。 +
+これは、ローカルブランチのserverfixをプッシュして、リモートのserverfixブランチを更新しろ +
+という命令である。 +
+
+よって、以下のようにすれば、リモートブランチの特定のブランチも更新できる。 +
+
+----
+$ git push origin adopt-serverfix:serverfix
+----
+
+=== git fetch
+リモートリポジトリにはあるが、ローカルリポジトリにはないデータを取得する +
+ただし、現在のbranchで利用するには、git merge origin/serverfix でマージして取り込まないと行けない +
+
+----
+$ git fetch
+$ git fetch --all // すべてのbranchの情報を更新
+----
+
+=== 追跡ブランチ
+リモートリポジトリのブランチと直接のつながりがあるローカルリポジトリのブランチのこと +
+git cloneするとmasterブランチが作成され、origin/masterの追跡ブランチとなる +
+
+以下のように trackオプションで追跡ブランチを作成することも可能 +
+
+----
+git checkout -b branch remotename/branch
+git checkout --track origin/serverfix
+----
+
+git branch -vvオプションを使うと、追跡ブランチの情報も確認することができる +
+
+----
+$ git branch -vv
+----
+
+=== リモートリポジトリのブランチ削除
+
+----
+$ git push origin --delete serverfix
+----
+
+=== mergeとrebase
+merge(三方向)は、共通の親と2つのブランチの最新のスナップショットをマージし、 +
+新しいスナップショットを作成し、コミットすること +
+
+rebaseは、変更のパッチを取得し、あるブランチの先端に適応させる +
+
+=== git diff
+
+----
+$ git diff // 変更したがステージさせていない変更
+$ git diff --staged // ステージさせた変更
+----
+
+git difftoolなるコマンドもある。 +
+
+=== git rm
+ファイルとgitによる管理対象から外す +
+
+=== git log
+sha-1を一意に得的できる範囲で短く表示してくれる。 +
+
+----
+$ git log --abbrev-commit
+----
+
+家系図を表示 +
+----
+$ git log --pretty=format:'%h %s' --graph
+----
+
+=== git rev-parse
+ブランチのsha-1がわかる
+
+----
+$ git show topic1
+$ git rev-parse topic1
+----
+
+=== コミットの範囲指定
+==== ダブルドット
+一つのコミットからは辿れるが、もう一つのコミットからは辿れないコミットを調べる +
+以下は、masterからは辿れないが、experimentから辿れるコミットを探す +
+
+----
+$ git log master..experiment
+----
+
+==== トリプルドット
+トリプルドットもあるみたい
+
+=== 歴史の書き換え
+https://git-scm.com/book/ja/v2/Git-%E3%81%AE%E3%81%95%E3%81%BE%E3%81%96%E3%81%BE%E3%81%AA%E3%83%84%E3%83%BC%E3%83%AB-%E6%AD%B4%E5%8F%B2%E3%81%AE%E6%9B%B8%E3%81%8D%E6%8F%9B%E3%81%88 +
+直近のコミットメッセージを変更したいだけの場合 +
+
+----
+$ git commit --amend
+----
+
+複数のコミットメッセージの変更 +
+rebaseのinteractiveオプションを使う +
+ただし、リモートリポジトリにpushしてしまった内容rebaseしてはいけないのは同じ +
+
+----
+$ git rebase -i HEAD~3
+----
+
+コミットをまとめることも可能である +
+以下のようにすると、1つのコミットにまとめられる +
+
+----
+$ git rebase -i HEAD~3
+
+pick f7f3f6d changed my name a bit
+squash 310154e updated README formatting and added blame
+squash a5f4a0d added cat-file
+----
+
+以下のサイトが参考になる +
+https://chaika.hatenablog.com/entry/2019/02/25/170000 +
+
+いちばん重要なのは独立してリバーとできるアトミックな変更単位でコミットされているかどうか？ +
+そうでなければ変更理由ではなく作業手順になっている可能性がある。 +
+
+== github pages
+github pagesでホストできるか確認  +
